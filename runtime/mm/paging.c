@@ -216,6 +216,7 @@ uintptr_t paging_evict_and_free_one(uintptr_t swap_va)
   return src_pa;
 }
 
+#include "call/syscall.h"
 void paging_handle_page_fault(struct encl_ctx* ctx)
 {
   uintptr_t addr;
@@ -228,6 +229,8 @@ void paging_handle_page_fault(struct encl_ctx* ctx)
   /* VA legitimacy check */
   if (addr >= EYRIE_LOAD_START)
     goto exit;
+  
+  print_strace ( "1\n" );
 
   entry = pte_of_va(addr);
 
@@ -235,22 +238,31 @@ void paging_handle_page_fault(struct encl_ctx* ctx)
   if (!entry)
     goto exit;
 
+  print_strace ( "2\n" );
+
   /* if PTE is already valid, it means something went wrong */
   if (*entry & PTE_V)
     goto exit;
+
+  print_strace ( "3\n" );
 
   /* where is the page? */
   back_ptr = __paging_va(pte_ppn(*entry) << RISCV_PAGE_BITS);
   if (!back_ptr)
     goto exit;
 
+  print_strace ( "4\n" );
+
   assert(back_ptr >= paging_backing_storage_addr);
   assert(back_ptr < paging_backing_storage_addr + paging_backing_storage_size);
 
+  print_strace ( "5\n" );
   /* evict & swap */
   frame = paging_evict_and_free_one(back_ptr);
   if (!frame)
     goto exit;
+
+  print_strace ( "6\n" );
 
   assert(*entry & PTE_U);
   /* validate the entry */
