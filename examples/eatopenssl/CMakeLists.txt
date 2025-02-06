@@ -1,15 +1,24 @@
-set(eapp_bin etls)
-set(eapp_src eapp/etls.c)
-set(host_bin etls-runner)
+set(eapp_bin eatopenssl)
+set(eapp_src eapp/eatopenssl.c)
+set(host_bin eatopenssl-runner)
 set(host_src host/host.cpp)
-set(package_name "etls.ke")
-set(package_script "./etls-runner etls eyrie-rt loader.bin")
+set(package_name "eatopenssl.ke")
+set(package_script "./eatopenssl-runner eatopenssl eyrie-rt loader.bin")
 set(eyrie_plugins "io_syscall linux_syscall net_syscall env_setup internal_strace debug")
 
 # eapp
 
 add_executable(${eapp_bin} ${eapp_src})
-target_link_libraries(${eapp_bin} "-static")
+# target_link_libraries(${eapp_bin} "-static")
+# OpenSSL was compiled with the following commands:
+# mkdir lib
+# ./Configure linux-generic64 no-shared no-dso no-tests no-threads --static --prefix=/home/dj/Desktop/openssl --cross-compile-prefix=riscv64-linux-gnu-
+# make -j8
+# make install
+# output libs and includes should be in the lib directory
+target_link_libraries(${eapp_bin} "-static" /home/dj/Desktop/openssl/lib/lib/libssl.a /home/dj/Desktop/openssl/lib/lib/libcrypto.a)
+
+target_include_directories(${eapp_bin} PUBLIC /home/dj/Desktop/openssl/lib/include)
 
 # host
 

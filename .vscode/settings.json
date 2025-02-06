@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "pthread.h": "c",
+        "edge_common.h": "c",
+        "syscall.h": "c",
+        "eapp_utils.h": "c",
+        "sealing.h": "c"
+    }
+}

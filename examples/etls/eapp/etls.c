@@ -41,8 +41,8 @@ int main ( int argc , char *argv[] ) {
         return -3;
     }
 
-    SSL_CTX_use_certificate_file ( server_context, "/root/fullchain.pem", SSL_SERVER_RSA_CERT );
-    SSL_CTX_use_PrivateKey_file ( server_context, "/root/privkey.pem", SSL_SERVER_RSA_KEY );
+    SSL_CTX_use_certificate_file ( server_context, "/root/etls/fullchain.pem", SSL_SERVER_RSA_CERT );
+    SSL_CTX_use_PrivateKey_file ( server_context, "/root/etls/privkey.pem", SSL_SERVER_RSA_KEY );
 
     if ( SSL_CTX_check_private_key ( server_context ) == 0 ) {
         printf ( "Private key not loaded\n" );
