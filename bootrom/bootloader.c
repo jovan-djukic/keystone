@@ -70,13 +70,28 @@ void bootloader() {
   }
 
   /* On a real device, the platform must provide a secure root device
-     keystore. For testing purposes we hardcode a known private/public
-     keypair */
-  // TEST Device key
-  #include "use_test_keys.h"
-  
-  // Derive {SK_D, PK_D} (device keys) from a 32 B random seed
-  //ed25519_create_keypair(sanctum_dev_public_key, sanctum_dev_secret_key, scratchpad);
+     keystore. QTEE-V simulates one per QEMU instance: before reset, QEMU's
+     generic loader places that device's secret 32 B seed in the device
+     secret key slot (-device loader,file=<DEV>.seed,addr=0x801ff040, see
+     mkutils/plat/generic/run.mk). That slot lies in the SM's PMP region, so
+     the OS never sees it, and SK_D is erased below once it has endorsed the
+     SM. The seed file itself is on the QEMU host: per-device, but not
+     hardware-protected.
+     With no seed (slot all zero), fall back to Keystone's published TEST
+     keypair. */
+  byte have_device_seed = 0;
+  for (unsigned int i = 0; i < 32; i++)
+    have_device_seed |= sanctum_dev_secret_key[i];
+
+  if (have_device_seed) {
+    // Derive {SK_D, PK_D} (device keys) from the injected 32 B seed
+    memcpy(scratchpad, sanctum_dev_secret_key, 32);
+    ed25519_create_keypair(sanctum_dev_public_key, sanctum_dev_secret_key, scratchpad);
+    memset(scratchpad, 0, 32);
+  } else {
+    // TEST Device key
+    #include "use_test_keys.h"
+  }
 
   // Measure SM
   sha3_init(&hash_ctx, 64);

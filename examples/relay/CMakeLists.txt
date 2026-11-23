@@ -2,8 +2,9 @@
 # with the ID and port compiled in: Eyrie gives the eapp no argv, and a
 # compiled-in ID is covered by the enclave measurement, so the untrusted host
 # can't make an image attest as another relay. The controller pins one
-# measurement per ID (--enclave-measurement R1=<hex>).
-set(QTEE_ENCLAVE_RELAY_IDS R1 CACHE STRING "Relay IDs to build enclave images for")
+# measurement per ID (--enclave-measurement R1=<hex>). All three relays run
+# in enclaves, each on its own simulated device (its own QEMU instance).
+set(QTEE_ENCLAVE_RELAY_IDS "R0;R1;R2" CACHE STRING "Relay IDs to build enclave images for")
 list(GET QTEE_ENCLAVE_RELAY_IDS 0 default_relay_id)
 set(eapp_bin relay)
 # QTEE_ROOT is passed in by overlays/keystone/package/keystone-examples.
