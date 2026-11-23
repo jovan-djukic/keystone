@@ -85,9 +85,13 @@ void bootloader() {
 
   // Combine SK_D and H_SM via a hash
   // sm_key_seed <-- H(SK_D, H_SM), truncate to 32B
+  // QTEE-V fix: hash the whole arrays. Upstream passed sizeof(*array), i.e.
+  // 1 byte each, so the SM key depended on one byte of SK_D and one of the
+  // public H_SM and could be recovered from any report in at most 256 tries
+  // (tools/check_sm_key.py).
   sha3_init(&hash_ctx, 64);
-  sha3_update(&hash_ctx, sanctum_dev_secret_key, sizeof(*sanctum_dev_secret_key));
-  sha3_update(&hash_ctx, sanctum_sm_hash, sizeof(*sanctum_sm_hash));
+  sha3_update(&hash_ctx, sanctum_dev_secret_key, sizeof(sanctum_dev_secret_key));
+  sha3_update(&hash_ctx, sanctum_sm_hash, sizeof(sanctum_sm_hash));
   sha3_final(scratchpad, &hash_ctx);
   // Derive {SK_D, PK_D} (device keys) from the first 32 B of the hash (NIST endorses SHA512 truncation as safe)
   ed25519_create_keypair(sanctum_sm_public_key, sanctum_sm_secret_key, scratchpad);
@@ -100,7 +104,7 @@ void bootloader() {
 
   // Clean up
   // Erase SK_D
-  memset((void*)sanctum_dev_secret_key, 0, sizeof(*sanctum_dev_secret_key));
+  memset((void*)sanctum_dev_secret_key, 0, sizeof(sanctum_dev_secret_key));
 
   // caller will clean core state and memory (including the stack), and boot.
   return;
